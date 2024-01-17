@@ -13,8 +13,7 @@ jobs:
         - name: Setup AWS ECR Details
           uses: aws-actions/configure-aws-credentials@v1
           with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
             aws-region: ${{secrets.AWS_REGION}}
 
         - name: Login to Amazon ECR
@@ -34,29 +33,3 @@ jobs:
         - name: ECR Status Check
           if: steps.containerImage.outcome == 'failure'
           run: exit 1
-
-        - name: Setup Terraform
-          uses: hashicorp/setup-terraform@v2.0.2
-          with:
-            terraform_version: latest
-            cli_config_credentials_token: ${{ secrets.TFC_API_TOKEN }}
-    
-        - name: Terraform Init
-          id: init
-          run: terraform init
-        
-        - name: Terraform Validate
-          id: validate
-          run: terraform validate
-  
-        - name: Terraform Plan
-          id: plan
-          run: terraform plan
-          continue-on-error: true
-  
-        - name: Terraform Plan Status
-          if: steps.plan.outcome == 'failure'
-          run: exit 1
-  
-        - name: Terraform Apply
-          run: terraform apply -auto-approve
